@@ -17,7 +17,6 @@ bridge_metadata_file = "input/4E047_metadata.csv"
 
 margem = ' ' * 4
 
-print("1 - OK")
 
 # Popular histórico do rio
 
@@ -50,9 +49,29 @@ def store_sensor_data() -> None:
     input("Pressione ENTER.")
     return
 
-# Exibe menu
+# Conecta banco de dados.
 
-def exibe_menu() -> None:
+try:
+    # Efetua a conexão com o Usuário no servidor
+    db_user = 'RM565576' # Insira a matrícula (ex.: RM123456)
+    db_pass = 'Fiap#2025' # Insira a senha 
+    conn = oracledb.connect(user=db_user, password=db_pass, dsn='oracle.fiap.com.br:1521/ORCL')
+
+    # Cria as instruções para cada módulo
+    inst_cadastro = conn.cursor()
+    inst_consulta = conn.cursor()
+
+except Exception as e:   
+    print("Erro: ", e) # Informa o erro
+    conexao = False    # Não há conexão
+
+else:
+    conexao = True    # Há conexão
+    print("Conexão OK")
+
+while conexao:
+
+# Exibe menu
     
     os.system('cls')
 
@@ -83,35 +102,15 @@ def exibe_menu() -> None:
 
         case 5:
             print("Encerrando o programa...")
-
-
- # Executa a aplicação se e enquanto houver conexão com o banco de dados.
-
-
-# Conecta banco de dados.
-
-def db_connect() -> None:
-    try:
-        # Efetua a conexão com o Usuário no servidor
-        db_user = 'RM565576' # Insira a matrícula (ex.: RM123456)
-        db_pass = 'Fiap#2025' # Insira a senha 
-        conn = oracledb.connect(user=db_user, password=db_pass, dsn='oracle.fiap.com.br:1521/ORCL')
-
-        # Cria as instruções para cada módulo
-        inst_cadastro = conn.cursor()
-        inst_consulta = conn.cursor()
-
-    except Exception as e:   
-        print("Erro: ", e) # Informa o erro
-        conexao = False    # Não há conexão
-
-    else:
-        conexao = True    # Há conexão
-        print("Conexão OK")
-
-    while conexao:
-        # os.system('cls')  
-        exibe_menu()
-
-db_connect()
+            
+            try:
+                inst_cadastro.close()
+                inst_consulta.close()
+                conn.close()
+                print("Conexão com o banco de dados encerrada com sucesso.")
+            except Exception as e:
+                print(f"Erro ao fechar a conexão: {e}")
+            finally:
+                conexao = False
+                 
 
