@@ -1,30 +1,56 @@
 -- Global Solution - 1/2025 - POC
 -- Estrutura de dados
 
-DROP TABLE T_4E_017_ITAICI_RIVER_HISTORY CASCADE CONSTRAINTS;
+-- Limpeza inicial
+
+DROP TABLE T_4E_047_ITAICI_RIVER_HISTORY CASCADE CONSTRAINTS;
+DROP TABLE T_4E_047_EQUIP_METADATA CASCADE CONSTRAINTS;
+DROP TABLE T_4E_047_EQUIP_HISTORY CASCADE CONSTRAINTS;
 
 -- Criação de tableas
 
-CREATE TABLE T_4E_017_ITAICI_RIVER_HISTORY (
+-- Histórico de leituras do nível do rio Itaici
+CREATE TABLE T_4E_047_ITAICI_RIVER_HISTORY (
     reading_id NUMBER(5) NOT NULL,
     reading_timestamp DATE NOT NULL,
     reading_water_level NUMBER (5, 2),
-    flag_flood BOOLEAN,
+    flag_flood NUMBER(1) DEFAULT 0 NOT NULL,
     reading_calculated_water_pressure NUMBER (6, 2),
-    flag_overcharge BOOLEAN
+    flag_overcharge NUMBER(1) DEFAULT 0 NOT NULL
 );
 
-CREATE TABLE T_4E_017_AJD_BRIDGE_METADATA (
-    bridge_id NUMBER(3) NOT NULL,
-    bridge_main_material VARCHAR(30),
-    bridge_charge_rupture_limit NUMBER(6, 2),
-    bridge_safety_factor NUMBER(2, 1)
+ALTER TABLE T_4E_047_ITAICI_RIVER_HISTORY
+    ADD CONSTRAINT PK_T_4E_047_ITAICI_RIVER_HISTORY PRIMARY KEY (reading_id);
+CREATE SEQUENCE SEQ_T_4E_047_ITAICI_RIVER_HISTORY START WITH 1 INCREMENT BY 1;
+
+-- Metadados de equipamentos
+CREATE TABLE T_4E_047_EQUIP_METADATA (
+    equip_id NUMBER(3) NOT NULL,
+    equip_main_material VARCHAR(30),
+    equip_charge_rupture_limit NUMBER(6, 2),
+    equip_safety_factor NUMBER(2, 1)
 );
 
-CREATE TABLE T_4E_047_AJD_BRIDGE_HISTORY (
+ALTER TABLE T_4E_047_EQUIP_METADATA
+    ADD CONSTRAINT PK_T_4E_047_EQUIP_METADATA PRIMARY KEY (equip_id);
+CREATE SEQUENCE SEQ_T_4E_047_EQUIP_METADATA START WITH 1 INCREMENT BY 1;
+
+-- Histórico de eventos de equipamentos
+-- Pode incluir manutenção, inspeções, danos etc.
+CREATE TABLE T_4E_047_EQUIP_HISTORY (
     event_id NUMBER(3) NOT NULL,
+    equip_id NUMBER(3) NOT NULL,
     event_timestamp DATE NOT NULL,
     event_type VARCHAR(30),
     event_description VARCHAR(256),
     event_severity NUMBER(2) 
-)
+);
+
+ALTER TABLE T_4E_047_EQUIP_HISTORY 
+    ADD CONSTRAINT PK_T_4E_047_EQUIP_HISTORY PRIMARY KEY (event_id);
+ALTER TABLE T_4E_047_EQUIP_HISTORY
+    ADD CONSTRAINT FK_T_4E_047_EQUIP_HISTORY_T_4E_047_EQUIP_METADATA FOREIGN KEY (equip_id)
+    REFERENCES T_4E_047_EQUIP_METADATA (equip_id);
+CREATE SEQUENCE SEQ_T_4E_047_EQUIP_HISTORY START WITH 1 INCREMENT BY 1;
+
+commit;
