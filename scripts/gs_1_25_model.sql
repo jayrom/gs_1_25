@@ -16,7 +16,7 @@ CREATE TABLE T_4E_047_ITAICI_RIVER_HISTORY (
     reading_water_level NUMBER (5, 2),
     flag_flood NUMBER(1) DEFAULT 0 NOT NULL,
     reading_calculated_water_pressure NUMBER (6, 2),
-    flag_overcharge NUMBER(1) DEFAULT 0 NOT NULL
+         NUMBER(1) DEFAULT 0 NOT NULL
 );
 
 ALTER TABLE T_4E_047_ITAICI_RIVER_HISTORY
