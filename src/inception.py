@@ -11,9 +11,9 @@ import oracledb
 import pandas as pd
 
 # Define arquivos de dados.
-river_history_file = "input/ITAICI_river_history.csv"
-bridge_history_file = "input/4E047_history.csv"
-bridge_metadata_file = "input/4E047_metadata.csv"
+river_history_file = "document/data_inception/ITAICI_river_history.csv"
+bridge_history_file = "document/data_inception/4E047_history.csv"
+bridge_metadata_file = "document/data_inception/4E047_metadata.csv"
 
 margem = ' ' * 4
 
@@ -22,16 +22,174 @@ margem = ' ' * 4
 
 def store_river_history() -> None:
 
-    print("Popular histórico do rio")
+    print("Popular histórico do rio\n")
+
+    river_history_data = None
+
+    try:
+        # Importa dados de leitura de sensores.
+        river_history_data = pd.read_csv(river_history_file)
+        print(f"Arquivo '{river_history_file}' carregado com sucesso.")
+
+    except FileNotFoundError:
+        print(f"Erro: Arquivo não encontrado em '{river_history_file}'")
+        return
+    except KeyError as e:
+        print(f"Erro: coluna não encontrada. Verifique a correspondência com o arquivo de dados: {e}")
+        return
+    except Exception as e:
+        print(f"Ocorreu um erro durante a importação: {e}")
+        return
+
+    # Verifica se o data frame está vazio.
+    if river_history_data.empty:
+        print("Erro: O data frame de histórico do rio está vazio.")
+        return
+    
+    try:
+        # Monta instruções SQL de inserção.
+        sql_insert = """
+        INSERT INTO T_4E_047_ITAICI_RIVER_HISTORY (
+            reading_id,
+            reading_timestamp,
+            reading_water_level,
+            flag_flood,
+            reading_calculated_water_pressure,
+            flag_overcharge
+        ) VALUES (SEQ_T_4E_047_ITAICI_RIVER_HISTORY.NEXTVAL, :1, :2, :3, :4, :5)
+        """
+
+        # Itera sobre os registros do data frame de histórico.
+        for index, row in river_history_data.iterrows():
+            try:
+                reading_timestamp = row['reading_timestamp']
+                reading_water_level = float(row['reading_water_level']) 
+                flag_flood = int(row['flag_flood'])
+                reading_calculated_water_pressure = float(row['reading_calculated_water_pressure']) 
+                flag_overcharge = int(row['flag_overcharge'])
+
+                # Cria a tupla de um registro para inserção.
+                values = (
+                    reading_timestamp,
+                    reading_water_level,
+                    flag_flood,
+                    reading_calculated_water_pressure,
+                    flag_overcharge
+                )
+
+                # Monta os valores nas instruções SQL e executa a inserção do registro no banco. Comita os dados.
+                inst_cadastro.execute(sql_insert, values)
+                conn.commit()
+
+                print(f"Inserindo registro: {values}")
+
+            except Exception as e:
+                print(f"Erro ao inserir registro {index}: {e}")
+
+
+    except ValueError as ve:
+        print("Erro: {ve}")
+
+    except:
+        print("Erro na cponexão com o DB.")
+
+    else:
+        print("Dados gravados.")
+
     input("Pressione ENTER.")
 
 # Popular histórico da ponte
 
 def store_bridge_history() -> None:
 
-    print("Popular histórico da ponte")
+    print("Popular histórico da ponte\n")
+
+    bridge_history_data = None
+
+    try:
+        # Importa dados de leitura de sensores.
+        bridge_history_data = pd.read_csv(bridge_history_file)
+        print(f"Arquivo '{bridge_history_file}' carregado com sucesso.")
+
+    except FileNotFoundError:
+        print(f"Erro: Arquivo não encontrado em '{bridge_history_file}'")
+        return
+    except KeyError as e:
+        print(f"Erro: coluna não encontrada. Verifique a correspondência com o arquivo de dados: {e}")
+        return
+    except Exception as e:
+        print(f"Ocorreu um erro durante a importação: {e}")
+        return
+
+    # Verifica se o data frame está vazio.
+    if bridge_history_data.empty:
+        print("Erro: O data frame de histórico da ponte está vazio.")
+        return
+    
+    try:
+        # Monta instruções SQL de inserção.
+        sql_insert = """
+        INSERT INTO T_4E_047_ITAICI_RIVER_HISTORY (
+            reading_id,
+            reading_timestamp,
+            reading_water_level,
+            flag_flood,
+            reading_calculated_water_pressure,
+            flag_overcharge
+        ) VALUES (SEQ_T_4E_047_ITAICI_RIVER_HISTORY.NEXTVAL, :1, :2, :3, :4, :5)
+        """
+
+        # Itera sobre os registros do data frame de histórico.
+        for index, row in river_history_data.iterrows():
+            try:
+                reading_timestamp = row['reading_timestamp']
+                reading_water_level = float(row['reading_water_level']) 
+                flag_flood = int(row['flag_flood'])
+                reading_calculated_water_pressure = float(row['reading_calculated_water_pressure']) 
+                flag_overcharge = int(row['flag_overcharge'])
+
+                # Cria a tupla de um registro para inserção.
+                values = (
+                    reading_timestamp,
+                    reading_water_level,
+                    flag_flood,
+                    reading_calculated_water_pressure,
+                    flag_overcharge
+                )
+
+                # Monta os valores nas instruções SQL e executa a inserção do registro no banco. Comita os dados.
+                inst_cadastro.execute(sql_insert, values)
+                conn.commit()
+
+                print(f"Inserindo registro: {values}")
+
+            except Exception as e:
+                print(f"Erro ao inserir registro {index}: {e}")
+
+
+    except ValueError as ve:
+        print("Erro: {ve}")
+
+    except:
+        print("Erro na cponexão com o DB.")
+
+    else:
+        print("Dados gravados.")
+
     input("Pressione ENTER.")
-    return
+
+
+
+
+
+
+
+
+
+
+
+
+    input("Pressione ENTER.")
 
 # Popular metadados da ponte
 
@@ -67,15 +225,15 @@ except Exception as e:
 
 else:
     conexao = True    # Há conexão
-    print("Conexão OK")
+    print("--- Conexão com base de dados estabelecida. ---")
 
 while conexao:
 
 # Exibe menu
     
-    os.system('cls')
+    # os.system('cls')
 
-    # print("--- Gerenciar dados da base ---")
+    print("--- Gravar dados históricos ---")
     print("""
         1 - Popular histórico do rio
         2 - Popular histórico da ponte

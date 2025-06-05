@@ -1,23 +1,2 @@
-﻿Id;Nome;Material predominante;Resistência limite (kPa);Fator de segurança;Resistência nominal (kPa)
-1;4E047;Concreto protendido;900;1,5;600
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
-;;;;;
+﻿Id,Nome,Material predominante,Resistência limite (kPa),Fator de segurança,Resistência nominal (kPa)
+1,4E047,Concreto protendido,900,1.5,600
