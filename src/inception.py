@@ -14,6 +14,7 @@ import pandas as pd
 river_history_file = "document/data_inception/ITAICI_river_history.csv"
 bridge_history_file = "document/data_inception/4E047_history.csv"
 bridge_metadata_file = "document/data_inception/4E047_metadata.csv"
+sensor_readings_file = "document/data_inception/4E047_sensor_readings.csv"
 
 margem = ' ' * 4
 
@@ -129,32 +130,32 @@ def store_bridge_history() -> None:
     try:
         # Monta instruções SQL de inserção.
         sql_insert = """
-        INSERT INTO T_4E_047_ITAICI_RIVER_HISTORY (
-            reading_id,
-            reading_timestamp,
-            reading_water_level,
-            flag_flood,
-            reading_calculated_water_pressure,
-            flag_overcharge
-        ) VALUES (SEQ_T_4E_047_ITAICI_RIVER_HISTORY.NEXTVAL, :1, :2, :3, :4, :5)
+        INSERT INTO T_4E_047_EQUIP_HISTORY (
+            event_id,
+            event_timestamp,
+            equip_id,
+            event_type,
+            event_severity,
+            event_description
+        ) VALUES (SEQ_T_4E_047_EQUIP_HISTORY.NEXTVAL, :1, :2, :3, :4, :5)
         """
 
         # Itera sobre os registros do data frame de histórico.
-        for index, row in river_history_data.iterrows():
+        for index, row in bridge_history_data.iterrows():
             try:
-                reading_timestamp = row['reading_timestamp']
-                reading_water_level = float(row['reading_water_level']) 
-                flag_flood = int(row['flag_flood'])
-                reading_calculated_water_pressure = float(row['reading_calculated_water_pressure']) 
-                flag_overcharge = int(row['flag_overcharge'])
+                event_timestamp = row['event_timestamp'] 
+                equip_id = int(row['equip_id'])
+                event_type = row['event_type']
+                event_severity = row['event_severity']
+                event_description = row['event_description']
 
                 # Cria a tupla de um registro para inserção.
                 values = (
-                    reading_timestamp,
-                    reading_water_level,
-                    flag_flood,
-                    reading_calculated_water_pressure,
-                    flag_overcharge
+                    event_timestamp,
+                    equip_id,
+                    event_type,
+                    event_severity,
+                    event_description
                 )
 
                 # Monta os valores nas instruções SQL e executa a inserção do registro no banco. Comita os dados.

@@ -40,11 +40,11 @@ CREATE SEQUENCE SEQ_T_4E_047_EQUIP_METADATA START WITH 1 INCREMENT BY 1;
 -- Pode incluir manutenção, inspeções, danos etc.
 CREATE TABLE T_4E_047_EQUIP_HISTORY (
     event_id NUMBER(3) NOT NULL,
-    equip_id NUMBER(3) NOT NULL,
     event_timestamp DATE NOT NULL,
+    equip_id NUMBER(3) NOT NULL,
     event_type VARCHAR(30),
-    event_description VARCHAR(256),
-    event_severity NUMBER(2) 
+    event_severity NUMBER(2) ,
+    event_description VARCHAR(256)
 );
 
 ALTER TABLE T_4E_047_EQUIP_HISTORY 
