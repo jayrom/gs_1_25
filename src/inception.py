@@ -19,7 +19,7 @@ sensor_readings_file = "document/data_inception/4E047_sensor_readings.csv"
 margem = ' ' * 4
 
 
-# Popular histórico do rio
+# Popula histórico do rio
 
 def store_river_history() -> None:
 
@@ -87,19 +87,17 @@ def store_river_history() -> None:
             except Exception as e:
                 print(f"Erro ao inserir registro {index}: {e}")
 
-
     except ValueError as ve:
         print("Erro: {ve}")
-
     except:
         print("Erro na cponexão com o DB.")
-
     else:
-        print("Dados gravados.")
+        print("Operação finalizada.")
 
     input("Pressione ENTER.")
 
-# Popular histórico da ponte
+
+# Popula histórico da ponte
 
 def store_bridge_history() -> None:
 
@@ -167,46 +165,109 @@ def store_bridge_history() -> None:
             except Exception as e:
                 print(f"Erro ao inserir registro {index}: {e}")
 
-
     except ValueError as ve:
         print("Erro: {ve}")
-
     except:
         print("Erro na cponexão com o DB.")
-
     else:
-        print("Dados gravados.")
+        print("Operação finalizada.")
 
     input("Pressione ENTER.")
+    return
 
-
-
-
-
-
-
-
-
-
-
-
-    input("Pressione ENTER.")
-
-# Popular metadados da ponte
+# Popula metadados da ponte
 
 def store_bridge_metadata() -> None:
 
     print("Popular metadados da ponte")
+
+
+    bridge_metadata_data = None
+
+    try:
+        # Importa dados de leitura de sensores.
+        bridge_metadata_data = pd.read_csv(bridge_metadata_file)
+        print(f"Arquivo '{bridge_metadata_file}' carregado com sucesso.")
+
+    except FileNotFoundError:
+        print(f"Erro: Arquivo não encontrado em '{bridge_metadata_file}'")
+        return
+    except KeyError as e:
+        print(f"Erro: coluna não encontrada. Verifique a correspondência com o arquivo de dados: {e}")
+        return
+    except Exception as e:
+        print(f"Ocorreu um erro durante a importação: {e}")
+        return
+
+    # Verifica se o data frame está vazio.
+    if bridge_metadata_data.empty:
+        print("Erro: O data frame de metadados da ponte está vazio.")
+        return
+    
+    try:
+        # Monta instruções SQL de inserção.
+        sql_insert = """
+        INSERT INTO T_4E_047_EQUIP_METADATA (
+            equip_id,
+            equip_name,
+            equip_main_material,
+            equip_charge_rupture_limit,
+            equip_safety_factor
+        ) VALUES (SEQ_T_4E_047_EQUIP_METADATA.NEXTVAL, :1, :2, :3, :4)
+        """
+
+        # Itera sobre os registros do data frame de histórico.
+        for index, row in bridge_metadata_data.iterrows():
+            try:
+                equip_name = row['equip_name']
+                equip_main_material = row['equip_main_material'] 
+                equip_charge_rupture_limit = float(row['equip_charge_rupture_limit'])
+                equip_safety_factor = float (row['equip_safety_factor'])
+
+                # Cria a tupla de um registro para inserção.
+                values = (
+                    equip_name,
+                    equip_main_material,
+                    equip_charge_rupture_limit,
+                    equip_safety_factor
+                )
+
+                # Monta os valores nas instruções SQL e executa a inserção do registro no banco. Comita os dados.
+                inst_cadastro.execute(sql_insert, values)
+                conn.commit()
+
+                print(f"Inserindo registro: {values}")
+
+            except Exception as e:
+                print(f"Erro ao inserir registro {index}: {e}")
+
+    except ValueError as ve:
+        print("Erro: {ve}")
+    except:
+        print("Erro na cponexão com o DB.")
+    else:
+        print("Operação finalizada.")
+
+
+
+
+
+
+
+
+
     input("Pressione ENTER.")
     return
 
-# Popular leituras do sensor
+
+# Popula leituras do sensor
 
 def store_sensor_data() -> None:
 
     print("Popular leituras do sensor")
     input("Pressione ENTER.")
     return
+
 
 # Conecta banco de dados.
 

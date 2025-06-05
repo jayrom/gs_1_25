@@ -27,6 +27,7 @@ CREATE SEQUENCE SEQ_T_4E_047_ITAICI_RIVER_HISTORY START WITH 1 INCREMENT BY 1;
 -- Metadados de equipamentos
 CREATE TABLE T_4E_047_EQUIP_METADATA (
     equip_id NUMBER(3) NOT NULL,
+    equip_name VARCHAR(30),
     equip_main_material VARCHAR(30),
     equip_charge_rupture_limit NUMBER(6, 2),
     equip_safety_factor NUMBER(2, 1)
