@@ -4,81 +4,95 @@
   "editor": "wokwi",
   "parts": [
     { "type": "wokwi-breadboard-half", "id": "bb2", "top": -31.8, "left": -102.8, "attrs": {} },
-    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": -38.4, "left": 283.24, "attrs": {} },
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": -48, "left": 302.44, "attrs": {} },
     {
       "type": "wokwi-led",
       "id": "led1",
-      "top": -195.6,
-      "left": -53.8,
+      "top": -224.4,
+      "left": -34.6,
       "attrs": { "color": "green" }
     },
     {
       "type": "wokwi-led",
       "id": "led2",
-      "top": -195.6,
-      "left": 3.8,
+      "top": -224.4,
+      "left": 13.4,
       "attrs": { "color": "yellow" }
     },
     {
       "type": "wokwi-led",
       "id": "led3",
-      "top": -195.6,
-      "left": 51.8,
+      "top": -224.4,
+      "left": 61.4,
       "attrs": { "color": "red" }
     },
     {
       "type": "wokwi-resistor",
       "id": "r1",
-      "top": -110.4,
-      "left": -0.55,
+      "top": -148.8,
+      "left": 9.05,
       "rotate": 90,
       "attrs": { "value": "220" }
     },
     {
       "type": "wokwi-resistor",
       "id": "r2",
-      "top": -100.8,
-      "left": -58.15,
+      "top": -148.8,
+      "left": -38.95,
       "rotate": 90,
       "attrs": { "value": "220" }
     },
     {
       "type": "wokwi-resistor",
       "id": "r3",
-      "top": -120,
-      "left": 47.45,
+      "top": -148.8,
+      "left": 57.05,
       "rotate": 90,
       "attrs": { "value": "220" }
     },
     {
       "type": "wokwi-slide-potentiometer",
       "id": "pot2",
-      "top": -206.2,
-      "left": 152.6,
+      "top": -235,
+      "left": 210.2,
       "attrs": { "travelLength": "30" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text1",
+      "top": -259.2,
+      "left": 182.4,
+      "attrs": { "text": "Sensor de pressão hidrostática." }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text2",
+      "top": -259.2,
+      "left": -48,
+      "attrs": { "text": "Indicadores de pressão" }
     }
   ],
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
     [ "esp:RX", "$serialMonitor:TX", "", [] ],
     [ "led1:A", "r2:1", "green", [ "v0" ] ],
-    [ "led2:A", "r1:1", "yellow", [ "v0" ] ],
+    [ "led2:A", "r1:1", "#8f4814", [ "v0" ] ],
     [ "led3:A", "r3:1", "purple", [ "v0" ] ],
-    [ "led1:C", "bb2:tn.1", "black", [ "v67.2", "h-28.4", "v76.9" ] ],
-    [ "led2:C", "bb2:tn.2", "black", [ "h-28.4", "v105.6", "h-49.6" ] ],
-    [ "led3:C", "bb2:tn.3", "black", [ "h-18.8", "v115.2", "h-97.6" ] ],
-    [ "bb2:20t.e", "esp:26", "yellow", [ "v0" ] ],
-    [ "esp:27", "bb2:17t.e", "green", [ "h0" ] ],
-    [ "esp:25", "bb2:23t.e", "purple", [ "h-115.05", "v0", "h-38.4" ] ],
-    [ "r2:2", "bb2:17t.a", "green", [ "h0" ] ],
-    [ "r1:2", "bb2:20t.a", "yellow", [ "h0" ] ],
-    [ "r3:2", "bb2:23t.a", "purple", [ "h0" ] ],
-    [ "bb2:tn.25", "esp:GND.1", "black", [ "h40", "v124.7" ] ],
-    [ "pot2:GND", "bb2:tn.23", "black", [ "v115.2", "h-169.2" ] ],
-    [ "pot2:VCC", "bb2:tp.20", "red", [ "h0" ] ],
-    [ "bb2:tp.25", "esp:3V3", "red", [ "v0.3", "h87.85" ] ],
-    [ "esp:34", "bb2:27t.e", "orange", [ "v19.2", "h-115.05" ] ],
-    [ "bb2:27t.a", "pot2:SIG", "orange", [ "v-96", "h-19.2" ] ]
+    [ "led1:C", "bb2:tn.1", "black", [ "v76.8", "h-47.6", "v96.1" ] ],
+    [ "led2:C", "bb2:tn.2", "black", [ "h0.4", "v96", "h-88" ] ],
+    [ "led3:C", "bb2:tn.3", "black", [ "h0.4", "v115.2", "h-126.4" ] ],
+    [ "r2:2", "bb2:17t.a", "green", [ "v66", "h86.4" ] ],
+    [ "r1:2", "bb2:20t.a", "#8f4814", [ "v27.6", "h67.2" ] ],
+    [ "r3:2", "bb2:23t.a", "purple", [ "v8.4", "h48" ] ],
+    [ "pot2:GND", "bb2:tn.23", "black", [ "h43.6", "v105.6", "h-280" ] ],
+    [ "bb2:tp.25", "esp:3V3", "red", [ "v0.3", "h1.6", "v-28.8" ] ],
+    [ "bb2:27t.a", "pot2:SIG", "orange", [ "v-96", "h-19.2" ] ],
+    [ "pot2:VCC", "bb2:tp.21", "red", [ "h0" ] ],
+    [ "esp:34", "bb2:27t.b", "orange", [ "h-57.45", "v9.6" ] ],
+    [ "bb2:23t.d", "esp:25", "purple", [ "v0" ] ],
+    [ "esp:26", "bb2:20t.d", "#8f4814", [ "h0" ] ],
+    [ "esp:27", "bb2:17t.d", "green", [ "h0" ] ],
+    [ "esp:GND.1", "bb2:tn.4", "black", [ "h0" ] ]
   ],
   "dependencies": {}
 }
