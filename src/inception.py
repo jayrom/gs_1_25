@@ -393,4 +393,3 @@ while conexao:
                 conexao = False
                  
 
-# teste
