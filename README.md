@@ -28,7 +28,7 @@
 
 ## Conteúdo
 - [Introdução](#introdução)
-- [Enchentes](#enchentes--nossa-oportunidade-de-contribuição)
+- [Enchentes](#enchentes---nossa-oportunidade-de-contribuição)
 
 
 
@@ -53,40 +53,45 @@ Enchentes estão entre os fenômenos que mais afetam a vida dos brasileiros. Nã
 Por outro lado, os municípios mais vulneráveis são justamente aqueles que carecem de recursos financeiros para a implementação de soluções de prevenção e mitigação de danos, que possam proteger a sua já deficiente infraestrutura.
 De uma forma ampla, o que se pretende é conceber uma solução de baixo custo que possa ajudar justamente os municípios mais vulneráveis.
 
-A solução
+## A solução
 O propósito da solução proposta é o de fornecer informações avançadas sobre eventos climáticos que possam trazer riscos aos equipamentos em questão, como segue:
 Alertas sobre a severidade de eventos futuros a médio prazo e predição de magnitude dos riscos, para o planejamento de ações prévias de mitigação.
 Alertas críticos sobre eventos críticos em andamento para ações imediatas de proteção da população.
 Relatórios de manutenção preditiva, com sugestões de correções e reparos.
-Hipóteses
+
+### Hipóteses
 A presente demanda pretende demonstrar a eficácia desse tipo de solução, com base na hipótese de que a análise combinada de dados históricos sobre as alterações do rio, dos equipamentos que se deseja monitorar, previsões meteorológicas e dados de sensoriamento dos equipamentos para vibração, deslocamento etc. possa ocultar padrões de comportamento que possam assinalar com a antecedência devida a ocorrência de eventos críticos para a infraestrutura tratada.
-A prova de conceito (POC)
-A presente demanda compreende a realização de uma prova de conceito (POC) que, como um protótipo da solução idealizada, ofereça as seguintes funcionalidades:
-Monitoramento do rio
-Monitoramento de um equipamento de infraestrutura relacionado (no caso, uma ponte)
-Emissão de alertas sobre eventos climáticos no rio
-Emissão de alertas sobre riscos à integridade do equipamento monitorado
 
-Solução técnica
+### A prova de conceito (POC)
+A presente demanda compreende a realização de uma POC que, como um protótipo da solução completa idealizada, ofereça as seguintes funcionalidades:
+- Monitoramento do rio
+- Monitoramento de um equipamento de infraestrutura relacionado (no caso, uma ponte)
+- Emissão de alertas sobre eventos climáticos no rio
+- Emissão de alertas sobre riscos à integridade do equipamento monitorado
 
+### Solução técnica
 
+#### Dados históricos
 
+A solução utiliza dados históricos reais[^3] para o treinamento do modelo de ML, adaptados para as nossas necessidades, ou seja, à série histórica que fornecia apenas a data de coleta e o nível do rio, foi acrescentado também o dado de pressão hidrodinâmica calculada, simulando a resposta o sensor.
+
+O cálculo da pressão é explicado mais adiante, no item [Dados de monitoramento](#dados-de-monitoramento)
 
 
 
 
 
 $$
-P = (k_1 \times N ) + (k_2 \times n^2) + Ruído
+P = (k_1 \times N ) + (k_2 \times n^2) + R
 $$
 
 Onde:
 
-- *P* = Pressão na Pilastra (em kPa)
-- *N* = Nível da Água do Rio (em metros)
-- *k<sub>1</sub>*  = Constante linear (simulando a pressão hidrostática base).
-- *k<sub>2</sub>*  = Constante quadrática (simulando o aumento acelerado em níveis altos).
-- *Ruído* = Valor aleatório (positivo ou negativo).
+- *P* = Pressão na Pilastra (*kPa*)
+- *N* = Nível da Água do Rio (*m*)
+- *k<sub>1</sub>* = Constante linear (simulando a pressão hidrostática base) (*kPa/m*).
+- *k<sub>2</sub>* = Constante quadrática (simulando o aumento acelerado em níveis altos) (*kPa/m<sup>2</sup>*).
+- *R* = Ruído. Pequeno valor aleatório (positivo ou negativo) (*kPa*).
 
 
 
@@ -129,8 +134,10 @@ Onde:
 - <b>README.md</b>: descrição geral do projeto (este documento que você está lendo agora).
 
 
-Referências
-
+## Referências
+[^1]: [Brasil tem 1.942 cidades com risco de desastre ambiental](https://educacao.cemaden.gov.br/midiateca/nota-tecnica-no-1-2023-sadj-vi-sam-cc-pr/)
+[^2]: [Cemaden aponta aumento de riscos de deslizamentos e inundações no Brasil, em projeções de aquecimento global](http://www2.cemaden.gov.br/cientistas-do-cemaden-apontam-aumento-de-risco-de-deslizamentos-e-inundacoes-no-brasil-em-projecoes-de-aquecimento-global-acima-de-2o-c/)
+[^3]: [DAEE-SP](https://cth.daee.sp.gov.br/sibh/)
 
 
 
