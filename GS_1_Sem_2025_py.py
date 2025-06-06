@@ -1,0 +1,781 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/jayrom/gs_1_25/blob/main/GS_1_Sem_2025_py.py\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 10,
+      "metadata": {
+        "id": "8dH9HHsNFabt"
+      },
+      "outputs": [],
+      "source": [
+        "import pandas as pd\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn.linear_model import LogisticRegression\n",
+        "from sklearn.metrics import accuracy_score, classification_report\n",
+        "import time\n",
+        "import sys\n",
+        "import os"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Conexão com Database\n"
+      ],
+      "metadata": {
+        "id": "2ez7gDy8h5Py"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!pip install oracledb"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "qF0nFFgLezpB",
+        "outputId": "893979d3-ef8b-4dc9-c6b1-f7cd2046ff63"
+      },
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: oracledb in /usr/local/lib/python3.11/dist-packages (3.1.1)\n",
+            "Requirement already satisfied: cryptography>=3.2.1 in /usr/local/lib/python3.11/dist-packages (from oracledb) (43.0.3)\n",
+            "Requirement already satisfied: cffi>=1.12 in /usr/local/lib/python3.11/dist-packages (from cryptography>=3.2.1->oracledb) (1.17.1)\n",
+            "Requirement already satisfied: pycparser in /usr/local/lib/python3.11/dist-packages (from cffi>=1.12->cryptography>=3.2.1->oracledb) (2.22)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import oracledb\n",
+        "from google.colab import userdata\n",
+        "db_user = userdata.get('DB_USER')\n",
+        "db_pass = userdata.get('DB_PASS')\n",
+        "dsn = 'oracle.fiap.com.br:1521/ORCL'\n",
+        "\n",
+        "try:\n",
+        "  conn = oracledb.connect(user=db_user, password=db_pass, dsn=dsn)\n",
+        "  inst_cadastro = conn.cursor()\n",
+        "  inst_consulta = conn.cursor()\n",
+        "  conexao = True\n",
+        "  print(\"--- Conexão com a base de dados estabelecida\")\n",
+        "except Exception as e:\n",
+        "  print(f\"Erro ao conectar com a base de dados: {e}\")\n",
+        "  conexao = False"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "EXN1CAZniStm",
+        "outputId": "63f3b6b3-1ea2-4558-94c9-33557df46c3f"
+      },
+      "execution_count": 12,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "--- Conexão com a base de dados estabelecida\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "import oracledb\n",
+        "from google.colab import userdata\n",
+        "\n",
+        "conn = None\n",
+        "inst_cadastro = None\n",
+        "inst_consulta = None\n",
+        "conexao = False\n",
+        "\n",
+        "def store_river_history(conn, inst_cadastro) -> None:\n",
+        "  print(\"Popular histórico do Rio\\n\")\n",
+        "\n",
+        "  river_history_file = \"document/data_inception/ITAICI_river_history.csv\"\n",
+        "  river_history_data = None\n",
+        "\n",
+        "  try:\n",
+        "    river_history_data = pd.read_csv(river_history_file)\n",
+        "    print(f\"Arquivo '{river_history_file}' carregado com sucesso.\")\n",
+        "\n",
+        "  except FileNotFoundError:\n",
+        "    print(f\"ERRO: Arquivo não encontrado em '{river_history_file}'\")\n",
+        "    return\n",
+        "  except Exception as e:\n",
+        "    print(f\"ERRO: Coluna não encontrada. Verifique a Correspondência com o arquivo de dados '{e}'\")\n",
+        "    return\n",
+        "\n",
+        "\n",
+        "  if river_history_data.empty:\n",
+        "    print(\"ERRO: Arquivo CSV está vazio.\")\n",
+        "    return\n",
+        "\n",
+        "  try:\n",
+        "    sql_insert = \"\"\"\n",
+        "    INSERT INTO T_4E_047_ITAICI_RIVER_HISTORY (\n",
+        "      reading_id,\n",
+        "      reading_timestamp,\n",
+        "      reading_water_level,\n",
+        "      flag_flood,\n",
+        "      reading_calculated_water_pressure,\n",
+        "      flag_overcharged\n",
+        "    ) VALUES (SEQ_T_4E_047_ITAICI_RIVER_HISTORY.NEXTVAL, :1, :2, :3, :4, :5)\n",
+        "    \"\"\"\n",
+        "\n",
+        "    for index, row in river_history_data.iterrows():\n",
+        "      try:\n",
+        "        reading_timestamp = row['reading_timestamp']\n",
+        "        reading_water_level = float(row['reading_water_level'])\n",
+        "        flag_flood = int(row['flag_flood'])\n",
+        "        reading_calculated_water_pressure = float(row['reading_calculated_water_pressure'])\n",
+        "        flag_overcharged = int(row['flag_overcharged'])\n",
+        "\n",
+        "        values = (\n",
+        "            reading_timestamp,\n",
+        "            reading_water_level,\n",
+        "            flag_flood,\n",
+        "            reading_calculated_water_pressure,\n",
+        "            flag_overcharged\n",
+        "        )\n",
+        "\n",
+        "        inst_cadastro.execute(sql_insert, values)\n",
+        "        conn.commit()\n",
+        "\n",
+        "        print(f\"Inserindo registro: {values}\")\n",
+        "\n",
+        "      except Exception as e:\n",
+        "        print(f\"Erro ao inserir registro {index}: {e}\")\n",
+        "\n",
+        "  except ValueError as ve:\n",
+        "        print(f\"Erro de valor: {ve}\") # Corrigido f-string\n",
+        "  except Exception as e: # Captura erros de conexão ou outros\n",
+        "        print(f\"Erro na conexão com o DB ou durante a operação: {e}\")\n",
+        "  else:\n",
+        "        print(\"Operação finalizada.\")"
+      ],
+      "metadata": {
+        "id": "p3CKCghyl0rZ"
+      },
+      "execution_count": 13,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Carregamento de Dados Históricos"
+      ],
+      "metadata": {
+        "id": "Dl4xSC1lJ7hY"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "DATA_NORMALIZED_FILE = 'ITAICI_river_history.csv'\n",
+        "SENSOR_READINGS_FILE = \"4E047_sensor_readings.csv\"\n",
+        "\n",
+        "PONTE_ID_SIMULACAO = 1\n",
+        "SIMULATION_INTERVAL_SECONDS = 2\n",
+        "\n",
+        "PONTES_DATA = {\n",
+        "    1: {\n",
+        "        'equip_name': 'Ponte Principal',\n",
+        "        'equip_main_material': 'Concreto Armado',\n",
+        "        'equip_charge_rupture_limit': 350.0,\n",
+        "        'equip_safety_factor': 1.5\n",
+        "    },\n",
+        "    2: {\n",
+        "        'equip_name': 'Ponte Principal',\n",
+        "        'equip_main_material': 'Aço',\n",
+        "        'equip_charge_rupture_limit': 400.0,\n",
+        "        'equip_safety_factor': 1.8\n",
+        "    }\n",
+        "}\n",
+        "\n",
+        "print(\"Dados da ponte carregados para a lógica de alerta\")"
+      ],
+      "metadata": {
+        "id": "WsgBMElyHTri",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "50387d76-f9ac-4650-c559-118863392437"
+      },
+      "execution_count": 14,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Dados da ponte carregados para a lógica de alerta\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Preparação de Dados para ML"
+      ],
+      "metadata": {
+        "id": "-igpSx3RKAsH"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "try:\n",
+        "    dados_treinamento = pd.read_csv(\n",
+        "        DATA_NORMALIZED_FILE,\n",
+        "        parse_dates=['reading_timestamp'],\n",
+        "        date_format='%Y-%m-%d %H:%M:%S'\n",
+        "    )\n",
+        "    print(f\"Dados de treinamento carregados de '{DATA_NORMALIZED_FILE}' com sucesso.\")\n",
+        "except FileNotFoundError:\n",
+        "    print(f\"ERRO: Arquivo não encontrado em '{DATA_NORMALIZED_FILE}'\")\n",
+        "    sys.exit(1)\n",
+        "except Exception as e:\n",
+        "    print(f\"Erro ao carregar '{DATA_NORMALIZED_FILE}': {e}\")\n",
+        "    sys.exit(1)\n",
+        "\n",
+        "features = ['reading_calculated_water_pressure']\n",
+        "target = 'flag_flood'\n",
+        "\n",
+        "X = dados_treinamento[features]\n",
+        "y = dados_treinamento[target]\n",
+        "\n",
+        "if len(X) < 20:\n",
+        "    print(\"Aviso: Poucos dados para treinamento. Considere adicionar mais entradas ao CSV\")"
+      ],
+      "metadata": {
+        "id": "7Jn0qmKyV4Jj",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "a33ffd3f-1bc6-4b9a-c468-e7d02416b5c8"
+      },
+      "execution_count": 15,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Dados de treinamento carregados de 'ITAICI_river_history.csv' com sucesso.\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from google.colab import drive\n",
+        "drive.mount('/content/drive')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "K4g4zS_3cdt8",
+        "outputId": "64279ab0-430e-425b-e43f-c42b336d2c75"
+      },
+      "execution_count": 16,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Mounted at /content/drive\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Divisão de Dados para Treinamento e Teste"
+      ],
+      "metadata": {
+        "id": "-4xOe7_-KHmE"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n",
+        "print(f\"Dados divididos: Treino ({len(X_train)} amostras), Teste ({len(X_test)} amostras)\")"
+      ],
+      "metadata": {
+        "id": "G4-pWNZzKLJ2",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "8392f8e3-07e1-4092-f6ca-38e846471153"
+      },
+      "execution_count": 17,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Dados divididos: Treino (415 amostras), Teste (104 amostras)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Treinamento utilizando Regressão Logística"
+      ],
+      "metadata": {
+        "id": "PruHRSYWLPy-"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "ml_model = LogisticRegression(random_state=42)\n",
+        "\n",
+        "print(\"Treinando Modelo...\")\n",
+        "ml_model.fit(X_train, y_train)\n",
+        "print(\"Modelo Treinado com sucesso!\")\n",
+        "\n",
+        "#Avaliação do modelo\n",
+        "\n",
+        "y_pred = ml_model.predict(X_test)\n",
+        "accuracy = accuracy_score(y_test, y_pred)\n",
+        "report = classification_report(y_test, y_pred)\n",
+        "\n",
+        "print(f\"\\nAcurácia do modelo nos dados de teste: {accuracy:.2f}\")\n",
+        "print(f\"\\nRelatório de Classificação:\\n\", report)\n"
+      ],
+      "metadata": {
+        "id": "n2WmF9S7LUG3",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "bb564210-147f-4c3b-fa60-eb7550811b1f"
+      },
+      "execution_count": 18,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Treinando Modelo...\n",
+            "Modelo Treinado com sucesso!\n",
+            "\n",
+            "Acurácia do modelo nos dados de teste: 1.00\n",
+            "\n",
+            "Relatório de Classificação:\n",
+            "               precision    recall  f1-score   support\n",
+            "\n",
+            "           0       1.00      1.00      1.00       101\n",
+            "           1       1.00      1.00      1.00         3\n",
+            "\n",
+            "    accuracy                           1.00       104\n",
+            "   macro avg       1.00      1.00      1.00       104\n",
+            "weighted avg       1.00      1.00      1.00       104\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Exemplo de predição para teste\n",
+        "\n",
+        "1.   Simulando dado de sensor (Nível de água)\n",
+        "2.   Valores Altos devem levar a uma previsão de Cheia (1)\n",
+        "3.   Valores Baixos devem levar a uma previsão sem risco (0)\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "eeCZ1o3hP56O"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "exemplo_pressao_alta = pd.DataFrame({'reading_calculated_water_pressure': [300.0]})\n",
+        "exemplo_pressao_baixa = pd.DataFrame({'reading_calculated_water_pressure': [100.0]})\n",
+        "\n",
+        "previsao_alta = ml_model.predict(exemplo_pressao_alta)[0]\n",
+        "prob_alta = ml_model.predict_proba(exemplo_pressao_alta)[0][1]\n",
+        "\n",
+        "previsao_baixa = ml_model.predict(exemplo_pressao_baixa)[0]\n",
+        "prob_baixa = ml_model.predict_proba(exemplo_pressao_baixa)[0][1]\n",
+        "\n",
+        "print(f\"\\nExemplo: Pressão da Água 300.0 kPa -> Previsão de Cheia: {previsao_alta} (Probabilidade: {prob_alta:.2f})\")\n",
+        "print(f\"\\nExemplo: Pressão da Água 100.0 kPa -> Previsão de Cheia: {previsao_baixa} (Probabilidade: {prob_baixa:.2f})\")"
+      ],
+      "metadata": {
+        "id": "UdLumGYgP_7U",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "8ada79a1-d20e-4893-e3dc-aac0be4eebce"
+      },
+      "execution_count": 19,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "Exemplo: Pressão da Água 300.0 kPa -> Previsão de Cheia: 0 (Probabilidade: 0.00)\n",
+            "\n",
+            "Exemplo: Pressão da Água 100.0 kPa -> Previsão de Cheia: 0 (Probabilidade: 0.00)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### alterar para leitura de pressão\n"
+      ],
+      "metadata": {
+        "id": "LN2C9tB2L_pQ"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Iplementação Lógica de Alerta\n"
+      ],
+      "metadata": {
+        "id": "PVw2wBHbr1S0"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def gerar_alerta(id_ponte: int, pressao_agua_pilastra_kpa: float, ml_model_trained) -> dict:\n",
+        "    alerta_gerado = 0\n",
+        "    severidade_risco_engenharia = 0\n",
+        "    severidade_risco_ml = 0\n",
+        "    mensagem_alerta = \"Condições Normais\"\n",
+        "\n",
+        "    if ml_model_trained is None:\n",
+        "        return {\n",
+        "            \"alerta_gerado\": 0,\n",
+        "            \"severidade_risco_ml\": 0,\n",
+        "            \"mensagem_alerta\": \"Modelo de ML não carregado para alerta\"\n",
+        "        }\n",
+        "\n",
+        "    \"\"\"### Lógica de Alerta de Engenharia\"\"\"\n",
+        "    ponte_info = PONTES_DATA.get(id_ponte)\n",
+        "    if ponte_info:\n",
+        "        limite_ruptura_kpa = ponte_info['equip_charge_rupture_limit']\n",
+        "        fator_seguranca = ponte_info['equip_safety_factor']\n",
+        "        limiar_critico_engenharia = limite_ruptura_kpa * fator_seguranca\n",
+        "\n",
+        "        if pressao_agua_pilastra_kpa > limiar_critico_engenharia:\n",
+        "            alerta_gerado = 1\n",
+        "            severidade_risco_engenharia = 2\n",
+        "            mensagem_alerta = f\"ALERTA CRÍTICO: Pressão da Água({pressao_agua_pilastra_kpa:.2f} kPa) EXCEDEU O LIMITE DE SEGURANÇA DA PONTE ({limiar_critico_engenharia:.2f} kPa)!\"\n",
+        "        elif pressao_agua_pilastra_kpa >= (limiar_critico_engenharia * 0.8):\n",
+        "            alerta_gerado = 1\n",
+        "            severidade_risco_engenharia = 1\n",
+        "            if mensagem_alerta == \"Condições Normais\":\n",
+        "                mensagem_alerta = f\"ALERTA MÉDIO: Pressão da Água({pressao_agua_pilastra_kpa:.2f} kPa) está próximo do limite de segurança da ponte ({limiar_critico_engenharia:.2f} kPa).\"\n",
+        "    else:\n",
+        "        print(f\"Aviso: Dados da Ponte {id_ponte} não encontrados em PONTES_DATA. Lógica de engenharia não aplicada para esta leitura.\")\n",
+        "\n",
+        "\n",
+        "    \"\"\"### Lógica de Alerta ML (baseada na previsão de cheia)\"\"\"\n",
+        "\n",
+        "    input_for_ml = pd.DataFrame({'reading_calculated_water_pressure': [pressao_agua_pilastra_kpa]})\n",
+        "\n",
+        "    previsao_ml = ml_model_trained.predict(input_for_ml)[0]\n",
+        "    probabilidade_ml = ml_model_trained.predict_proba(input_for_ml)[0][1]\n",
+        "\n",
+        "    if previsao_ml == 1:\n",
+        "        alerta_gerado = 1\n",
+        "        if probabilidade_ml >= 0.7:\n",
+        "            severidade_risco_ml = 2\n",
+        "            if severidade_risco_engenharia < 2:\n",
+        "                if \"ALERTA MÉDIO\" in mensagem_alerta and severidade_risco_engenharia < 2:\n",
+        "                    mensagem_alerta = mensagem_alerta.replace(\"ALERTA MÉDIO\", \"ALERTA CRÍTICO (ML)\")\n",
+        "                elif \"Condições Normais\" in mensagem_alerta or severidade_risco_engenharia < 1:\n",
+        "                    mensagem_alerta = f\"ALERTA CRÍTICO (ML): Alta probabilidade de cheia ({probabilidade_ml:.2f}) baseada em padrões históricos.\"\n",
+        "        else:\n",
+        "            severidade_risco_ml = 1\n",
+        "            if severidade_risco_engenharia == 0 and \"Condições Normais\" in mensagem_alerta:\n",
+        "                 mensagem_alerta = f\"ALERTA MÉDIO (ML): Risco de cheia detectado ({probabilidade_ml:.2f}).\"\n",
+        "            elif severidade_risco_engenharia < 1:\n",
+        "                severidade_risco_ml = max(severidade_risco_ml, 1)\n",
+        "\n",
+        "\n",
+        "\n",
+        "    severidade_final = max(severidade_risco_engenharia, severidade_risco_ml)\n",
+        "\n",
+        "    return {\n",
+        "        \"alerta_gerado\": alerta_gerado,\n",
+        "        \"severidade_risco_ml\": severidade_final,\n",
+        "        \"mensagem_alerta\": mensagem_alerta\n",
+        "    }"
+      ],
+      "metadata": {
+        "id": "_6ukEwNNWX72"
+      },
+      "execution_count": 22,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "##Simulação de Leitura do Sensor Integrada"
+      ],
+      "metadata": {
+        "id": "pD24mKN3fOyc"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from logging import exception\n",
+        "def simulate_sensor_readings_from_csv_for_alerts(trained_model, id_ponte, sim_interval_seconds):\n",
+        "  print(f\"\\n--- Iniciando Simulação de Leitura do Sensor Integrada\")\n",
+        "  print(f\"Dados do sensor de '{SENSOR_READINGS_FILE}' serão utilizadas\")\n",
+        "  print(f\"Pressione Ctrl+C a qualquer momento para interromper a simulação.\")\n",
+        "\n",
+        "  try:\n",
+        "    sim_data_df = pd.read_csv(\n",
+        "        SENSOR_READINGS_FILE,\n",
+        "        parse_dates=['reading_timestamp'],\n",
+        "        date_format='%d-%b-%y'\n",
+        "    )\n",
+        "    sim_data_df = sim_data_df.sort_values(by='reading_timestamp')\n",
+        "    print(f\"CSV de simulação carregado. Total de {len(sim_data_df)} leituras para simular\")\n",
+        "\n",
+        "  except FileNotFoundError:\n",
+        "    print(f\"Erro: Arquivo não encontrado em '{SENSOR_READINGS_FILE}'\")\n",
+        "    return\n",
+        "  except KeyError as e:\n",
+        "    print(f\"Erro: Coluna '{e}' não encontrada no CSV de simulação. Esperado 'reading_pressure'. Verifique os nomes das colunas.\")\n",
+        "    return\n",
+        "  except Exception as e:\n",
+        "    print(f\"Erro ao carregar CSV de simulação: {e}\")\n",
+        "    return\n",
+        "\n",
+        "  for index, row in sim_data_df.iterrows():\n",
+        "    try:\n",
+        "      simulated_pressure_kpa = float(row['reading_pressure'])\n",
+        "\n",
+        "      print(f\"\\nSimulando leitura {index + 1} (Timestamp: {row['reading_timestamp']}):\")\n",
+        "      print(f\"\\nPressão lida pelo sensor: {simulated_pressure_kpa:.2f} kPa\")\n",
+        "\n",
+        "      alert_result = gerar_alerta(id_ponte, simulated_pressure_kpa, trained_model)\n",
+        "\n",
+        "      print(f\"  Status do Alerta: {alert_result['mensagem_alerta']}\")\n",
+        "      print(f\"  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): {alert_result['severidade_risco_ml']}\")\n",
+        "\n",
+        "      time.sleep(sim_interval_seconds)\n",
+        "    except KeyboardInterrupt:\n",
+        "      print(f\"\\nSimulação interrompida pelo usuário.\")\n",
+        "      break\n",
+        "    except Exception as e:\n",
+        "      print(f\"Erro ao simular leitura {index}: {e}\")\n",
+        "      continue\n",
+        "  print(\"\\n--- Simulação de Leitura do Sensor Finalizada. ---\")\n",
+        "\n",
+        "if ml_model is not None and PONTES_DATA:\n",
+        "  simulate_sensor_readings_from_csv_for_alerts(ml_model, PONTE_ID_SIMULACAO, SIMULATION_INTERVAL_SECONDS)\n",
+        "else:\n",
+        "  print(\"--- Não foi possível iniciar a simulação: Modelo ML não treinado ou dados da ponte não carregados.\")"
+      ],
+      "metadata": {
+        "id": "hWQoYdl5fWsL",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "457656a4-0b51-4a25-b36f-a71d6b0288b8"
+      },
+      "execution_count": 23,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "--- Iniciando Simulação de Leitura do Sensor Integrada\n",
+            "Dados do sensor de '4E047_sensor_readings.csv' serão utilizadas\n",
+            "Pressione Ctrl+C a qualquer momento para interromper a simulação.\n",
+            "CSV de simulação carregado. Total de 65 leituras para simular\n",
+            "\n",
+            "Simulando leitura 1 (Timestamp: 2025-06-03 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 200.34 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 2 (Timestamp: 2025-06-04 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 197.35 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 3 (Timestamp: 2025-06-05 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 198.05 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 4 (Timestamp: 2025-06-06 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 202.98 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 5 (Timestamp: 2025-06-07 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 200.76 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 6 (Timestamp: 2025-06-08 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 218.73 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 7 (Timestamp: 2025-06-09 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 277.42 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 8 (Timestamp: 2025-06-10 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 216.50 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 9 (Timestamp: 2025-06-11 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 202.65 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 10 (Timestamp: 2025-06-12 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 201.02 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 11 (Timestamp: 2025-06-13 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 219.48 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 12 (Timestamp: 2025-06-14 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 400.21 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 13 (Timestamp: 2025-06-15 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 642.32 kPa\n",
+            "  Status do Alerta: ALERTA CRÍTICO: Pressão da Água(642.32 kPa) EXCEDEU O LIMITE DE SEGURANÇA DA PONTE (525.00 kPa)!\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 2\n",
+            "\n",
+            "Simulando leitura 14 (Timestamp: 2025-06-16 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 299.93 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 15 (Timestamp: 2025-06-17 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 252.87 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 16 (Timestamp: 2025-06-18 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 258.00 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 17 (Timestamp: 2025-06-19 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 232.22 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 18 (Timestamp: 2025-06-20 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 225.01 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 19 (Timestamp: 2025-06-21 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 219.08 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 20 (Timestamp: 2025-06-22 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 213.45 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulando leitura 21 (Timestamp: 2025-06-23 00:00:00):\n",
+            "\n",
+            "Pressão lida pelo sensor: 214.81 kPa\n",
+            "  Status do Alerta: Condições Normais\n",
+            "  Severidade Geral (0=Baixa, 1=Média, 2=Crítica): 0\n",
+            "\n",
+            "Simulação interrompida pelo usuário.\n",
+            "\n",
+            "--- Simulação de Leitura do Sensor Finalizada. ---\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
