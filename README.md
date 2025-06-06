@@ -77,9 +77,33 @@ A solução utiliza dados históricos reais[^3] para o treinamento do modelo de 
 
 O cálculo da pressão é explicado mais adiante, no item [Dados de monitoramento](#dados-de-monitoramento)
 
+#### Dados de monitoramento
+
+##### Composição do kit de borda
+
+A solução adotada simula o posicionamento de um sensor hidrodinâmico na pilastra mais exposta da ponte, ou seja, a que recebe maior efeito das variações de pressão hidrodinâmica com a mudança de nível e vazão do rio.
+
+![Configuração do kit de borda](assets/sensor.png)
+*<sub>Configuração do kit de borda<sub>*
+
+##### Simulação do kit de borda
+
+Utilizamos o Wokwi para construir o protótipo virtual do kit de borda e gerar os dados fictícios do sensor.
+Como computador de borda, usamos o ESP32.
+Para simular o sensor de pressão hidrostática, utilizados um potenciômetro que nos permitiu variar o nível de saída. 
+Os valores de saída do potenciômetro variam entre 0 e 4095. Como a faixa de valores de pressão hidrostática deveria estar entre 180 e 700 kPa, foi necessário mapear as duas faixas para obter os valores na faixa necessária (document/sensor_diagram/sketch.ino, linha 50).
+O kit de simulação contava ainda com leds coloridos indicativos da faixas de pressão normal, em alerta e m emergência.
+
+![Simulador do kit de borda](document/sensor_diagram/sensor_diagram.png)
+
+Geramos cerca de 60 leituras, que foram impressas na saída serial e copiadas para um arquivo texto.
 
 
+##### Cálculo da pressão
 
+Em função da indisponibilidade de dados suficientes (não temos histórico de vazão), adotamos uma forma simplificada, considerando apenas os dados de nível do rio. Obviamente essa premissa deve ser reconsiderada para o efetivo desenvolvimento da solução, mas é válida para o contexto da POC.
+
+Embora o sensor tenha posição fixa na pilastra, consideramos que a mudança de nível do rio causa uma mudança na pressão hidrodinâmica geral, que pode ser calculada a partir dos dados do sensor, usando-se uma fórmula de compensação simplificada, conforme segue:
 
 $$
 P = (k_1 \times N ) + (k_2 \times n^2) + R
