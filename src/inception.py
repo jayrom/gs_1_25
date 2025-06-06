@@ -18,7 +18,6 @@ sensor_readings_file = "document/data_inception/4E047_sensor_readings.csv"
 
 margem = ' ' * 4
 
-
 # Popula histórico do rio
 
 def store_river_history() -> None:
@@ -89,13 +88,15 @@ def store_river_history() -> None:
 
     except ValueError as ve:
         print("Erro: {ve}")
+        return
     except:
         print("Erro na cponexão com o DB.")
+        return
     else:
         print("Operação finalizada.")
 
     input("Pressione ENTER.")
-
+    return
 
 # Popula histórico da ponte
 
@@ -167,8 +168,10 @@ def store_bridge_history() -> None:
 
     except ValueError as ve:
         print("Erro: {ve}")
+        return
     except:
         print("Erro na cponexão com o DB.")
+        return
     else:
         print("Operação finalizada.")
 
@@ -181,11 +184,10 @@ def store_bridge_metadata() -> None:
 
     print("Popular metadados da ponte")
 
-
     bridge_metadata_data = None
 
     try:
-        # Importa dados de leitura de sensores.
+        # Importa metadados da ponte.
         bridge_metadata_data = pd.read_csv(bridge_metadata_file)
         print(f"Arquivo '{bridge_metadata_file}' carregado com sucesso.")
 
@@ -243,30 +245,87 @@ def store_bridge_metadata() -> None:
 
     except ValueError as ve:
         print("Erro: {ve}")
+        return
     except:
         print("Erro na cponexão com o DB.")
+        return
     else:
         print("Operação finalizada.")
 
-
-
-
-
-
-
-
-
     input("Pressione ENTER.")
     return
-
 
 # Popula leituras do sensor
 
 def store_sensor_data() -> None:
 
     print("Popular leituras do sensor")
+
+    sensor_readings_data = None
+
+    try:
+        # Importa dados de leitura de sensores.
+        sensor_readings_data = pd.read_csv(sensor_readings_file)
+        print(f"Arquivo '{sensor_readings_file}' carregado com sucesso.")
+
+    except FileNotFoundError:
+        print(f"Erro: Arquivo não encontrado em '{sensor_readings_file}'")
+        return
+    except KeyError as e:
+        print(f"Erro: coluna não encontrada. Verifique a correspondência com o arquivo de dados: {e}")
+        return
+    except Exception as e:
+        print(f"Ocorreu um erro durante a importação: {e}")
+        return
+
+    # Verifica se o data frame está vazio.
+    if sensor_readings_data.empty:
+        print("Erro: O data frame de histórico do sensor está vazio.")
+        return
+    
+    try:
+        # Monta instruções SQL de inserção.
+        sql_insert = """
+        INSERT INTO T_4E_047_SENSOR_READINGS (
+            reading_id,
+            reading_timestamp,
+            reading_pressure
+        ) VALUES (SEQ_T_4E_047_SENSOR_READINGS.NEXTVAL, :1, :2)
+        """
+
+        # Itera sobre os registros do data frame de histórico.
+        for index, row in sensor_readings_data.iterrows():
+            try:
+                reading_timestamp = row['reading_timestamp']
+                reading_pressure = float(row['reading_pressure']) 
+
+                # Cria a tupla de um registro para inserção.
+                values = (
+                    reading_timestamp,
+                    reading_pressure
+                )
+
+                # Monta os valores nas instruções SQL e executa a inserção do registro no banco. Comita os dados.
+                inst_cadastro.execute(sql_insert, values)
+                conn.commit()
+
+                print(f"Inserindo registro: {values}")
+
+            except Exception as e:
+                print(f"Erro ao inserir registro {index}: {e}")
+
+    except ValueError as ve:
+        print("Erro: {ve}")
+        return
+    except:
+        print("Erro na cponexão com o DB.")
+        return
+    else:
+        print("Operação finalizada.")
+
     input("Pressione ENTER.")
     return
+
 
 
 # Conecta banco de dados.
