@@ -26,11 +26,6 @@
 ### Coordenador
 - <a href="https://www.linkedin.com/in/andregodoichiovato">Andre Godoi Chiovato</a>
 
-## Conteúdo
-- [Introdução](#introdução)
-- [Enchentes](#enchentes---nossa-oportunidade-de-contribuição)
-
-
 
 ## Introdução
 
@@ -40,14 +35,16 @@ Podemos considerar que o contexto em se desenvolveu este projeto simula aspectos
 
 Nesse aspecto, a realidade do nosso país nos propõe desafios de grandes proporções. A título ilustrativo, recentes estudos mostram que cerca de 2000 municípios apresentam vulnerabilidades para acidentes naturais [^1], como enchentes, movimentações de terrenos etc. Outro estudo mostra que, devido ao aquecimento global, a ocorrência desse tipo de desastre pode duplicar a cada grau centígrado de aumento na temperatura do planeta [^2].
 
-[fotos mapas]
+![Mapa de região considerada, propensa a enchentes, próxima a Jundiaí - SP](assets/mapa_enchentes.png)
+*<sub>Mapa de região considerada, propensa a enchentes, próxima a Jundiaí - SP<sub>*
 
 
 ### Enchentes - Nossa oportunidade de contribuição
 
 Enchentes estão entre os fenômenos que mais afetam a vida dos brasileiros. Não é difícil imaginar um rio que é historicamente palco de inúmeras cheias, causando transtornos às populações que vivem nas cidades às suas margens. Alguns equipamentos de infraestrutura ao longo do rio tornam-se pontos de atenção por sua importância estratégica, entre os quais destacamos pontes, barragens, usinas etc. As alterações no comportamento do rio colocam em risco a integridade desses equipamentos, exigindo das autoridades constantes esforços preventivos que assegurem à população a disponibilidade desses recursos tão necessários ao seu bem-estar.
 
-[fotos enchentes]
+![Imagens de danos a pontes causados por enchentes.](assets/fotos_pontes.png)
+*<sub>Imagens de danos a pontes causados por enchentes.<sub>*
 
 
 Por outro lado, os municípios mais vulneráveis são justamente aqueles que carecem de recursos financeiros para a implementação de soluções de prevenção e mitigação de danos, que possam proteger a sua já deficiente infraestrutura.
@@ -55,8 +52,8 @@ De uma forma ampla, o que se pretende é conceber uma solução de baixo custo q
 
 ## A solução
 O propósito da solução proposta é o de fornecer informações avançadas sobre eventos climáticos que possam trazer riscos aos equipamentos em questão, como segue:
-Alertas sobre a severidade de eventos futuros a médio prazo e predição de magnitude dos riscos, para o planejamento de ações prévias de mitigação.
-Alertas críticos sobre eventos críticos em andamento para ações imediatas de proteção da população.
+- Alertas sobre a severidade de eventos futuros a médio prazo e predição de magnitude dos riscos, para o planejamento de ações prévias de mitigação.
+- Alertas críticos sobre eventos críticos em andamento para ações imediatas de proteção da população.
 Relatórios de manutenção preditiva, com sugestões de correções e reparos.
 
 ### Hipóteses
@@ -144,9 +141,11 @@ Talvez o maior diferencial na concepção deste projeto é poder unir duas abord
 - **Severidade**: A solução define diferentes níveis de severidade (ex: Normal, Atenção, Crítico) com base na combinação dos alertas de engenharia e ML. O maior nível de severidade entre os dois é sempre o considerado para a mensagem final.
 Essa abordagem garante que tanto os riscos diretos à estrutura (engenharia) quanto os padrões preditivos de cheia (ML) sejam considerados, oferecendo um sistema de alerta mais robusto e confiável.
 
-### <font color="#6631D7">Interface do Usuário</font> 
+### Interface do Usuário 
+
 #### Objetivo da Interface
 Para demonstrar e visualizar os alertas em tempo real de forma amigável, foi desenvolvida uma interface de usuário web interativa utilizando Streamlit, cujo objetivo principal é permitir que as autoridades ou operadores monitorem facilmente a situação da ponte e recebam avisos claros sobre potenciais riscos.
+
 #### Funcionalidades Principais
 - **Visualização de leituras simuladas**: A interface apresenta as leituras de pressão da água em tempo real, simuladas a partir de um conjunto de dados históricos.
 - **Indicadores visuais de alerta**: A pressão atual é exibida com cores e mensagens que indicam o status do alerta (Verde para normal, Amarelo/Laranja para atenção, Vermelho para crítico), baseadas na lógica híbrida de ML e engenharia.
@@ -155,45 +154,23 @@ Para demonstrar e visualizar os alertas em tempo real de forma amigável, foi de
 
 ### Algumas ideias para implementação futura 
 - **Aprimoramento do modelo de ML**: Inclusão de novas features (ex: dados de chuva, nível do rio a montante, temperatura) para aumentar a acurácia e a antecedência da previsão.
-- **Integração com sensores reais**: Conexão com ESP32 real para leitura de dados em campo."Notificações: Implementação de sistemas de notificação (SMS, e-mail) para alertas críticos.
+- **Integração com sensores reais**: Conexão com ESP32 real para leitura de dados em campo.
+- **Notificações**: Implementação de sistemas de notificação (SMS, e-mail) para alertas críticos.
 - **Relatórios detalhados**: Geração de relatórios com histórico de eventos e desempenho do sistema.
-
-
-
-# Entrega 1
-
-## Circuito de sensores
-
-
-## Lógica de controle
-
-
-# Entrega 2
-
-
-## Dados importados
-
-
-## Banco de dados
-
-
-## Script Python
-
-
-# Considerações adicionais
-
+- **Especificação do modelo de comunicação**: Definir modelos de rede e protocolos e a necessidade de múltiplos sensores.
+- **Aprimoramento da arquitetura da solução**: Desenvolver as APIs necessárias para proteção dos dados e para integração com outros sistemas.
 
 ## 📁 Estrutura de pastas
 
 - <b>assets</b>: imagens e outros artefatos.
 
-- <b>document</b>: artefatos de simulação.
-
+- <b>document/data_-_inception</b>: arquivos de dados (CSVs).
+- <b>document/sensor_diagram</b>: arquivos para simulação dos sensores.
 - <b>scripts</b>: scripts SQL para construção e população inicial do banco de dados.
-
-- <b>src</b>: 
-
+- <b>src</b>: scripts e códigos da solução
+- <b>GS_1_Sem_2025.ipynb</b>: arquivo do Google Colab, com o modelo de ML, interface de usuário e lógica de alertas.
 - <b>README.md</b>: descrição geral do projeto (este documento que você está lendo agora).
+
 
 
 ## Referências
@@ -201,7 +178,9 @@ Para demonstrar e visualizar os alertas em tempo real de forma amigável, foi de
 [^2]: [Cemaden aponta aumento de riscos de deslizamentos e inundações no Brasil, em projeções de aquecimento global](http://www2.cemaden.gov.br/cientistas-do-cemaden-apontam-aumento-de-risco-de-deslizamentos-e-inundacoes-no-brasil-em-projecoes-de-aquecimento-global-acima-de-2o-c/)
 [^3]: [DAEE-SP](https://cth.daee.sp.gov.br/sibh/)
 
+## Vídeo explicativo
 
+Veja em https://youtu.be/nNdhJLdcfbo 
 
 ## 📋 Licença
 
