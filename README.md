@@ -178,9 +178,9 @@ Para demonstrar e visualizar os alertas em tempo real de forma amigável, foi de
 [^2]: [Cemaden aponta aumento de riscos de deslizamentos e inundações no Brasil, em projeções de aquecimento global](http://www2.cemaden.gov.br/cientistas-do-cemaden-apontam-aumento-de-risco-de-deslizamentos-e-inundacoes-no-brasil-em-projecoes-de-aquecimento-global-acima-de-2o-c/)
 [^3]: [DAEE-SP](https://cth.daee.sp.gov.br/sibh/)
 
-## Vídeo explicativo
+## Vídeos explicativos
 
-Veja em https://youtu.be/nNdhJLdcfbo 
+Veja em https://youtu.be/nNdhJLdcfbo e https://youtu.be/CeQ5-fFtwWU 
 
 ## 📋 Licença
 
