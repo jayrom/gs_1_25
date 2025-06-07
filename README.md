@@ -118,7 +118,45 @@ Onde:
 - *R* = Ruído. Pequeno valor aleatório (positivo ou negativo) (*kPa*).
 
 
+### Modelo de Machine Learning e Lógica de Alertas
 
+É a parte central da solução e também a mais complexa, nem tanto na execução, mas na concepção.
+
+#### Objetivo e abordagem do ML
+O modelo de Machine Learning tem como objetivo prever a **ocorrência de danos na ponte** com base nos dados de pressão da água, complementando as regras de engenharia.
+Para este problema, que envolve classificação binária (cheia/não cheia), optamos pela **Regressão Logística**, devido à sua interpretabilidade facilitada, eficiência computacional e capacidade de fornecer probabilidades de ocorrência, que são essenciais para graduar a severidade dos alertas.
+
+#### Preparação dos Dados para o ML
+- Os dados históricos de pressão – `reading_calculated_water_pressure` – foram utilizados como feature (variável de entrada) para o modelo.
+- A variável alvo (target) para o treinamento foi a `flag_flood`, que indica a ocorrência de uma cheia (1 para cheia, 0 para não cheia) conforme o histórico.
+- Os dados foram divididos em conjuntos de treino (80%) e teste (20%) para avaliar o desempenho do modelo de forma justa.
+
+#### Treinamento e Avaliação do Modelo
+- O modelo foi treinado com o conjunto de dados de treinamento.
+- Após o treinamento, o modelo foi avaliado no conjunto de testes para verificar sua acurácia e capacidade de generalização. As métricas de Acurácia e o Relatório de Classificação (precisão, recall, f1-score) foram utilizados para medir seu desempenho.
+
+(resultados)
+
+#### Lógica de Alertas Integrada (ML + Engenharia)
+Talvez o maior diferencial na concepção deste projeto é poder unir duas abordagens diferentes para o mesmo objetivo, já que a solução não depende apenas do modelo de ML. Ela integra uma lógica de alerta híbrida, combinando a previsão do modelo com regras de engenharia pré-definidas.
+- **Regras de Engenharia**: Definimos limites de pressão (equip_charge_rupture_limit e equip_safety_factor) específicos para cada ponte para identificar situações de risco iminente à estrutura. Se a pressão medida excede esses limites de segurança, um alerta é emitido independentemente da previsão do ML.
+- **Alerta por Machine Learning**: O modelo de Regressão Logística calcula a probabilidade de ocorrerem danos. Se essa probabilidade exceder um determinado limiar (ex: 70%), um alerta é disparado.
+- **Severidade**: A solução define diferentes níveis de severidade (ex: Normal, Atenção, Crítico) com base na combinação dos alertas de engenharia e ML. O maior nível de severidade entre os dois é sempre o considerado para a mensagem final.
+Essa abordagem garante que tanto os riscos diretos à estrutura (engenharia) quanto os padrões preditivos de cheia (ML) sejam considerados, oferecendo um sistema de alerta mais robusto e confiável.
+
+### <font color="#6631D7">Interface do Usuário</font> 
+#### Objetivo da Interface
+Para demonstrar e visualizar os alertas em tempo real de forma amigável, foi desenvolvida uma interface de usuário web interativa utilizando Streamlit, cujo objetivo principal é permitir que as autoridades ou operadores monitorem facilmente a situação da ponte e recebam avisos claros sobre potenciais riscos.
+#### Funcionalidades Principais
+- **Visualização de leituras simuladas**: A interface apresenta as leituras de pressão da água em tempo real, simuladas a partir de um conjunto de dados históricos.
+- **Indicadores visuais de alerta**: A pressão atual é exibida com cores e mensagens que indicam o status do alerta (Verde para normal, Amarelo/Laranja para atenção, Vermelho para crítico), baseadas na lógica híbrida de ML e engenharia.
+- **Histórico de pressão**: Um gráfico em tempo real mostra a tendência da pressão da água ao longo do tempo, permitindo observar as variações e a evolução dos alertas.
+- **Controle da simulação**: Botões intuitivos permitem iniciar e pausar a simulação das leituras, facilitando a demonstração e o teste do sistema.
+
+### Algumas ideias para implementação futura 
+- **Aprimoramento do modelo de ML**: Inclusão de novas features (ex: dados de chuva, nível do rio a montante, temperatura) para aumentar a acurácia e a antecedência da previsão.
+- **Integração com sensores reais**: Conexão com ESP32 real para leitura de dados em campo."Notificações: Implementação de sistemas de notificação (SMS, e-mail) para alertas críticos.
+- **Relatórios detalhados**: Geração de relatórios com histórico de eventos e desempenho do sistema.
 
 
 
